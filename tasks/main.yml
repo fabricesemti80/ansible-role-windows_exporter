@@ -26,6 +26,13 @@
     or not windows_exporter_installed_check.stat.exists
   register: windows_exporter_download_check
 
+- name: uninstall old Windows exporter
+  win_package:
+    path: '{{ ansible_env.TEMP }}\windows_exporter_install.msi'
+    state: absent
+  when: >
+    windows_exporter_installed_check.stat.exists
+  
 - name: install Windows exporter
   win_package:
     path: '{{ ansible_env.TEMP }}\windows_exporter_install.msi'
