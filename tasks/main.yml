@@ -12,7 +12,7 @@
   register: windows_exporter_version_check
 
 - name: Check if windows_exporter is already installed
-  win_stat: 
+  win_stat:
     path: "{{ windows_exporter_bin_path }}"
   register: windows_exporter_installed_check
 
@@ -26,13 +26,6 @@
     or not windows_exporter_installed_check.stat.exists
   register: windows_exporter_download_check
 
-- name: uninstall old Windows exporter
-  win_package:
-    path: '{{ ansible_env.TEMP }}\windows_exporter_install.msi'
-    state: absent
-  when: >
-    windows_exporter_installed_check.stat.exists
-  
 - name: install Windows exporter
   win_package:
     path: '{{ ansible_env.TEMP }}\windows_exporter_install.msi'
@@ -42,6 +35,16 @@
     windows_exporter_version_check.stderr is not defined
     or windows_exporter_version not in windows_exporter_version_check.stderr
     or not windows_exporter_installed_check.stat.exists
+  register: windows_exporter_install_check
+  notify: restart windows_exporter
+
+- name: reInstall Windows exporter if present
+  win_package:
+    path: '{{ ansible_env.TEMP }}\windows_exporter_install.msi'
+    state: reinstalled
+    arguments: "{{ windows_exporter_options }}"
+  when: >
+    windows_exporter_installed_check.stat.exists
   register: windows_exporter_install_check
   notify: restart windows_exporter
 
